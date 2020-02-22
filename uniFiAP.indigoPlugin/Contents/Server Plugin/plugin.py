@@ -2843,7 +2843,7 @@ class Plugin(indigo.PluginBase):
 				if "useWhichMAC" in props and props["useWhichMAC"] == "MAClan":
 					MAC = dev.states["MAClan"]
 			self.indiLOG.log(20,"unifi-Report getting _id for AP "+dev.name+ "  "+"/stat/device/"+MAC )
-			jData= self.executeCMDOnController(data={}, pageString="/stat/device/"+MAC, jsonAction="returnData")
+			jData= self.executeCMDOnController(data={}, pageString="/stat/device/"+MAC, jsonAction="returnData", cmdType="get")
 			for dd in jData:
 				if "_id" not in dd:
 					self.myLog( text="_id not in data  ", mType="unifi-Report")
@@ -2865,7 +2865,7 @@ class Plugin(indigo.PluginBase):
 				if "useWhichMAC" in props and props["useWhichMAC"] == "MAClan":
 					MAC = dev.states["MAClan"]
 			break	
-		self.executeCMDOnController(data={}, pageString="/stat/device/"+MAC, jsonAction="print",startText="== Device print: /stat/device/"+MAC+" ==")
+		self.executeCMDOnController(data={}, pageString="/stat/device/"+MAC, jsonAction="print",startText="== Device print: /stat/device/"+MAC+" ==", cmdType="get")
 		return
 
 	####-----------------	 ---------
@@ -2877,19 +2877,19 @@ class Plugin(indigo.PluginBase):
 ######## reports all devcies
 	####-----------------	 ---------
 	def buttonConfirmPrintalluserInfoFromControllerCALLBACK(self, valuesDict=None, filter="", typeId="", devId=""):
-		data = self.executeCMDOnController(data={"type":"all","conn":"all"}, pageString="/stat/alluser/", jsonAction="returnData")
+		data = self.executeCMDOnController(data={"type":"all","conn":"all"}, pageString="/stat/alluser/", jsonAction="returnData", cmdType="get")
 		self.unifsystemReport3(data, "== ALL USER report ==")
 		return
 
 	####-----------------	 ---------
 	def buttonConfirmPrintuserInfoFromControllerCALLBACK(self, valuesDict=None, filter="", typeId="", devId=""):
-		data = self.executeCMDOnController(data={}, pageString="/list/user/", jsonAction="returnData")
+		data = self.executeCMDOnController(data={}, pageString="/list/user/", jsonAction="returnData", cmdType="get")
 		self.unifsystemReport3(data, "== USER report ==")
 
 ####   general reports
 	####-----------------	 ---------
 	def buttonConfirmPrintHealthInfoFromControllerCALLBACK(self, valuesDict=None, filter="", typeId="", devId=""):
-		data = self.executeCMDOnController(data={}, pageString="/stat/health/", jsonAction="returnData")
+		data = self.executeCMDOnController(data={}, pageString="/stat/health/", jsonAction="returnData", cmdType="get")
 		out ="== HEALTH report ==\n"
 		ii=0
 		for item in data:
@@ -2915,7 +2915,7 @@ class Plugin(indigo.PluginBase):
 
 	####-----------------	 ---------
 	def buttonConfirmPrintPortForWardInfoFromControllerCALLBACK(self, valuesDict=None, filter="", typeId="", devId=""):
-		data =self.executeCMDOnController(data={}, pageString="/stat/portforward/", jsonAction="returnData")
+		data =self.executeCMDOnController(data={}, pageString="/stat/portforward/", jsonAction="returnData", cmdType="get")
 		out ="== PortForward report ==\n"
 		out+= "##".ljust(4) + "name".ljust(20) + "protocol".ljust(10) + "source".ljust(16)	+ "fwd_port".ljust(9)+ "dst_port".ljust(9)+ "fwd_ip".ljust(17)+ "rx_bytes".ljust(10)+ "rx_packets".ljust(17)+"\n"
 		ii=0
@@ -2936,7 +2936,7 @@ class Plugin(indigo.PluginBase):
 		return
 	####-----------------	 ---------
 	def buttonConfirmPrintAlarmInfoFromControllerCALLBACK(self, valuesDict=None, filter="", typeId="", devId=""):
-		data = self.executeCMDOnController(data={}, pageString="/list/alarm/", jsonAction="returnData")
+		data = self.executeCMDOnController(data={}, pageString="/list/alarm/", jsonAction="returnData", cmdType="get")
 		self.unifsystemReport1(data,True,"    ==AlarmReport==",limit=99999)
 		self.addToMenuXML(valuesDict)
 		return
@@ -3492,7 +3492,7 @@ class Plugin(indigo.PluginBase):
 			if self.unifiCloudKeyMode != "ON":														 return
 			listOfClients={}
 			# get data from conroller
-			data =	  self.executeCMDOnController(data={"type": "all", "conn": "all"}, pageString="stat/alluser", jsonAction="returnData")
+			data =	  self.executeCMDOnController(data={"type": "all", "conn": "all"}, pageString="stat/alluser", jsonAction="returnData", cmdType="get")
 			if data == {}:
 				self.indiLOG.log(20,u"addFirstSeenToStates  "+"No data returned from controller")
 				return
@@ -3536,7 +3536,7 @@ class Plugin(indigo.PluginBase):
 			listOfBlockedClients={}
 
 			# get data from conroller
-			data =	  self.executeCMDOnController(data={"type": "all", "conn": "all"}, pageString="stat/alluser", jsonAction="returnData")
+			data =	  self.executeCMDOnController(data={"type": "all", "conn": "all"}, pageString="stat/alluser", jsonAction="returnData", cmdType="get")
 			if data == {}:
 				self.indiLOG.log(20,"No data returned from controller")#,mType="Connection")
 				return
@@ -3578,7 +3578,7 @@ class Plugin(indigo.PluginBase):
 			if self.unifiCloudKeyMode != "ON"			: return
 			newDeviceFound =[]
 
-			deviceDict =		self.executeCMDOnController(data={}, pageString="/stat/device/", jsonAction="returnData")
+			deviceDict =		self.executeCMDOnController(data={}, pageString="/stat/device/", jsonAction="returnData", cmdType="get")
 			if deviceDict =={}: return
 			for item in deviceDict:
 				ipNumber = ""
@@ -3780,14 +3780,14 @@ class Plugin(indigo.PluginBase):
 
 
 			if self.unfiCurl.find("curl") > -1:
-				cmdL  = self.unfiCurl+" --insecure -c /tmp/unifiCookie  -H \"Content-Type: application/json\" --data '"+json.dumps({"username":self.unifiCONTROLLERUserID,"password":self.unifiCONTROLLERPassWd})+"' 'https://"+self.unifiCloudKeyIP+":"+self.unifiCloudKeyPort+self.apiLoginPath+"'"
+				cmdL  = self.unfiCurl+" --insecure -c /tmp/unifiCookie -H \"Content-Type: application/json\" --data '"+json.dumps({"username":self.unifiCONTROLLERUserID,"password":self.unifiCONTROLLERPassWd})+"' 'https://"+self.unifiCloudKeyIP+":"+self.unifiCloudKeyPort+self.apiLoginPath+"'"
 				if data =={}: dataDict = ""
 				else:		  dataDict = " --data '"+json.dumps(data)+"' "
 				if	 cmdType == "put":	  cmdTypeUse= " -X PUT "
-				elif cmdType == "post":	  cmdTypeUse= " -X post "
-				elif cmdType == "get":	  cmdTypeUse= " -X get "
+				elif cmdType == "post":	  cmdTypeUse= " -X POST "
+				elif cmdType == "get":	  cmdTypeUse= " -X GET "
 				else:					  cmdTypeUse= " "
-				cmdR  = self.unfiCurl+" --insecure -b /tmp/unifiCookie " +dataDict+cmdTypeUse+ " 'https://"+self.unifiCloudKeyIP+":"+self.unifiCloudKeyPort+self.unifiApiWebPage+self.unifiCloudKeySiteName+"/"+pageString.strip("/")+"'"
+				cmdR  = self.unfiCurl+" --insecure -b /tmp/unifiCookie " +dataDict+cmdTypeUse+ "'https://"+self.unifiCloudKeyIP+":"+self.unifiCloudKeyPort+self.unifiApiWebPage+self.unifiCloudKeySiteName+"/"+pageString.strip("/")+"'"
 
 
 				if self.decideMyLog(u"Connection"): self.indiLOG.log(20,"Connection: "+cmdL )
@@ -3798,13 +3798,16 @@ class Plugin(indigo.PluginBase):
 						except:
 							self.indiLOG.log(40,"UNIFI executeCMDOnController error no json object: (wrong UID/passwd, ip number?) ...>>"+ unicode(ret[0]) +"<<\n"+unicode(ret[1])+" Connection")
 							return []
-						if jj["meta"]["rc"] !="ok":
+						if self.UDMPro == "True":
+							if 'username' not in jj:
+								self.indiLOG.log(40,u"UNIFI executeCMDOnController error: (wrong UID/passwd, ip number?) ...>>"+ unicode(ret[0]) +"<<\n"+unicode(ret[1])+" Connection")
+								return []
+						elif jj["meta"]["rc"] !="ok":
 							self.indiLOG.log(40,u"UNIFI executeCMDOnController error: (wrong UID/passwd, ip number?) ...>>"+ unicode(ret[0]) +"<<\n"+unicode(ret[1])+" Connection")
 							return []
 						elif self.decideMyLog(u"Connection"):	 self.indiLOG.log(20,"Connection: "+ret[0] )
 						self.lastUnifiCookieCurl =time.time()
 
-						
 
 					if self.decideMyLog(u"Connection"):	self.indiLOG.log(20,"Connection: "+cmdR )
 					if startText !="":					self.indiLOG.log(20,"Connection: "+startText)
