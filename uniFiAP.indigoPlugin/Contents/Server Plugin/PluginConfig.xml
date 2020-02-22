@@ -162,7 +162,7 @@
     <Field    id="unifiCloudKeyIP"       type="textfield" defaultValue="192.168.1.x" visibleBindingId="unifiCloudKeyMode" visibleBindingValue="ON,ONreportsOnly"> <Label>ipNumber of controller</Label>  </Field>
     <Field    id="unifiCloudKeyPort"     type="textfield" defaultValue="8443"        visibleBindingId="unifiCloudKeyMode" visibleBindingValue="ON,ONreportsOnly"> <Label>..port number of controller:</Label>  </Field>
     <Field    id="unifiCloudKeySiteName" type="textfield" defaultValue="default"     visibleBindingId="unifiCloudKeyMode" visibleBindingValue="ON,ONreportsOnly"> <Label>..site ID (not name) in http... 8443/manage/site/&gt;default&lt;/:</Label>  </Field>
-    <Field    id="unifiApiWebPage"       type="textfield" defaultValue="/api/s/"     visibleBindingId="unifiCloudKeyMode" visibleBindingValue="ON,ONreportsOnly"  readonly="True" > <Label>..unifi api web page:</Label>  </Field>
+    <Field    id="unifiApiWebPage"       type="textfield" defaultValue="/api/s/"     visibleBindingId="unifiCloudKeyMode" visibleBindingValue="ON,ONreportsOnly"> <Label>..unifi api web page:</Label>  </Field>
 
     <Field    id="unifigetBlockedClientsDeltaTime"       type="menu"  defaultValue="180"   tooltip="after plugin action for (un)block it will do an auto refresh, this is only for the cases where a device is (un)blocked through the web interface, it will create a BIG data dunp and transfer"  > 
 		<Label>.. get all (un)blocked client info from Controller:</Label> 
