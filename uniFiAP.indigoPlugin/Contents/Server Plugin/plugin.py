@@ -51,8 +51,15 @@ class Plugin(indigo.PluginBase):
 		#self.plugin_file_handler.setFormatter(pfmt)
 
 		self.pluginShortName 	= "UniFi"
+		self.unifiApiWebPage			=  self.pluginPrefs.get(u"unifiApiWebPage", "/api/s/")
 
-
+		self.UDMPro = "False"
+		self.apiLoginPath = "/api/login"
+		if self.unifiApiWebPage == "/proxy/network/api/s/":
+			self.UDMPro = "True"
+			self.apiLoginPath = "/api/auth/login"
+		
+		
 		self.quitNow					= ""
 		self.getInstallFolderPath		= indigo.server.getInstallFolderPath()+"/"
 		self.indigoPath					= indigo.server.getInstallFolderPath()+"/"
@@ -109,6 +116,8 @@ class Plugin(indigo.PluginBase):
 		indigo.server.log(  u"plugin.py               {}".format(self.pathToPlugin))
 		indigo.server.log(  u"Plugin params           {}".format(self.indigoPreferencesPluginDir))
 
+		if self.UDMPro == "True":
+			indigo.server.log(  u"UDM Pro Detected")
 		self.indiLOG.log( 0, "logger  enabled for     0 ==> TEST ONLY ")
 		self.indiLOG.log( 5, "logger  enabled for     THREADDEBUG    ==> TEST ONLY ")
 		self.indiLOG.log(10, "logger  enabled for     DEBUG          ==> TEST ONLY ")
@@ -301,9 +310,8 @@ class Plugin(indigo.PluginBase):
 		self.listenStart				= {}
 		self.unifiUserID				= self.pluginPrefs.get(u"unifiUserID", "")
 		self.unifiPassWd				= self.pluginPrefs.get(u"unifiPassWd", "")
-		self.unifiApiWebPage			=  "/api/s/"
 		self.unifiControllerSession		= ""
-
+										
 		self.unfiCurl					= self.pluginPrefs.get(u"unfiCurl", "/usr/bin/curl")
 		if self.unfiCurl == "curl" or len(self.unfiCurl) < 4:
 			self.unfiCurl = "/usr/bin/curl"
@@ -1469,7 +1477,7 @@ class Plugin(indigo.PluginBase):
 				url = "https://"+self.ipnumberOfNVR+ ":7443/api/2.0/camera/"+"?apiKey=" + self.nvrVIDEOapiKey
 
 			if self.unfiCurl.find("curl") > -1:
-				cmdL  = self.unfiCurl+" --insecure -c /tmp/nvrCookie --data '"+json.dumps({"username":self.nvrWebUserID,"password":self.nvrWebPassWd})+"' 'https://"+self.ipnumberOfNVR+":7443/api/login'"
+				cmdL  = self.unfiCurl+" --insecure -c /tmp/nvrCookie -H \"Content-Type: application/json\" --data '"+json.dumps({"username":self.nvrWebUserID,"password":self.nvrWebPassWd})+"' 'https://"+self.unifiCloudKeyIP+":"+self.unifiCloudKeyPort+self.apiLoginPath+"'"
 				if data =={} or data =="": dataDict = ""
 				else:					   dataDict = " --data '"+json.dumps(data)+"' "
 				if	 cmdType == "put":	  cmdTypeUse= " -X PUT "
@@ -3772,7 +3780,7 @@ class Plugin(indigo.PluginBase):
 
 
 			if self.unfiCurl.find("curl") > -1:
-				cmdL  = self.unfiCurl+" --insecure -c /tmp/unifiCookie --data '"+json.dumps({"username":self.unifiCONTROLLERUserID,"password":self.unifiCONTROLLERPassWd})+"' 'https://"+self.unifiCloudKeyIP+":"+self.unifiCloudKeyPort+"/api/login'"
+				cmdL  = self.unfiCurl+" --insecure -c /tmp/unifiCookie  -H \"Content-Type: application/json\" --data '"+json.dumps({"username":self.unifiCONTROLLERUserID,"password":self.unifiCONTROLLERPassWd})+"' 'https://"+self.unifiCloudKeyIP+":"+self.unifiCloudKeyPort+self.apiLoginPath+"'"
 				if data =={}: dataDict = ""
 				else:		  dataDict = " --data '"+json.dumps(data)+"' "
 				if	 cmdType == "put":	  cmdTypeUse= " -X PUT "
@@ -8286,7 +8294,9 @@ class Plugin(indigo.PluginBase):
 			if u"general_temperature" in theDict:
 				if unicode(theDict[u"general_temperature"]) !="0":
 					temperature = GT.getNumber(theDict[u"general_temperature"])
-			overHeating		= theDict[u"overheating"]
+			overHeating		= ""
+ 			if u"overheating" in theDict:
+ 				overHeating = theDict[u"overheating"]
 			uptime			= unicode(theDict[u"uptime"])
 			portTable		= theDict[u"port_table"]
 			nports			= len(portTable)
@@ -8439,7 +8449,7 @@ class Plugin(indigo.PluginBase):
 						self.MAC2INDIGO[xType][MAC][u"upTime"] =uptime
 					if temperature !="" and "temperature" in dev.states and  temperature != dev.states[u"temperature"]:
 						self.addToStatesUpdateList(dev.id,u"temperature", temperature)
-					if "overHeating" in dev.states and overHeating != dev.states[u"overHeating"]:
+					if "overHeating" !="" and "overHeating" in dev.states and overHeating != dev.states[u"overHeating"]:
 							self.addToStatesUpdateList(dev.id,u"overHeating", overHeating)
 					if ipNDevice != dev.states[u"ipNumber"]:
 						self.addToStatesUpdateList(dev.id,u"ipNumber", ipNDevice)
@@ -8488,7 +8498,8 @@ class Plugin(indigo.PluginBase):
 					self.addToStatesUpdateList(dev.id,u"model", model)
 					if temperature !="" and "temperature" in dev.states and  temperature != dev.states[u"temperature"]:
 						self.addToStatesUpdateList(dev.id,u"temperature", temperature)
-					self.addToStatesUpdateList(dev.id,u"overHeating", overHeating)
+					if "overHeating" !="" and "overHeating" in dev.states and overHeating != dev.states[u"overHeating"]:
+ 						self.addToStatesUpdateList(dev.id,u"overHeating", overHeating)
 					self.addToStatesUpdateList(dev.id,u"hostname", hostname)
 					self.addToStatesUpdateList(dev.id,u"switchNo", apNumb)
 					self.setupBasicDeviceStates(dev, MAC, xType, ipNDevice, "", "", u" status up     SW DICT  new SWITCH", "STATUS-SW")
@@ -9125,4 +9136,3 @@ class LevelFormatter(logging.Formatter):
 			return self._level_formatters[record.levelno].format(record)
 
 		return super(LevelFormatter, self).format(record)
-
